@@ -5,14 +5,17 @@ export default async function handler(req, res) {
 
   const { prompt } = req.body;
 
+  // YENİ TOKEN BURAYA
+  const REPLICATE_TOKEN = 'r8_bUzX3i6qoN5SUlvwTM0SvHdxyaNrtWI2CK619';
+
   try {
-    // Replicate API - Çok daha stabil
-    const response = await fetch(
+    // Replicate API - Görsel oluşturma başlat
+    const startResponse = await fetch(
       'https://api.replicate.com/v1/predictions',
       {
         method: 'POST',
         headers: {
-          'Authorization': 'Token r8_MpiUKkCAueSddKnxdpDcvW3JySR0NxC3wQHd7', // YENİ REPLICATE TOKEN BURAYA
+          'Authorization': `Token ${REPLICATE_TOKEN}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -27,26 +30,27 @@ export default async function handler(req, res) {
       }
     );
 
-    if (!response.ok) {
-      throw new Error('Replicate API hatası');
+    if (!startResponse.ok) {
+      const errorText = await startResponse.text();
+      throw new Error(`Replicate API hatası: ${errorText}`);
     }
 
-    const prediction = await response.json();
+    const prediction = await startResponse.json();
     
-    // Hemen görsel dönmek yerine basit bir mesaj
+    // Hızlı test için hemen başarılı mesajı dönelim
     res.status(200).json({ 
       success: true, 
-      message: '✅ REPLICATE AI çalışıyor! Gerçek görsel oluşturuluyor...',
+      message: '✅ REPLICATE AI bağlantısı başarılı! Görsel oluşturuluyor...',
       testImage: 'https://via.placeholder.com/512x512/0088ff/000000?text=Replicate+AI+Çalışıyor',
       predictionId: prediction.id
     });
     
   } catch (error) {
-    // Hata durumunda test modu
+    console.error('Replicate error:', error);
     res.status(200).json({ 
       success: true, 
-      message: '🎉 AI Bağlantısı Başarılı! (Test Modu)',
-      testImage: 'https://via.placeholder.com/512x512/00ff88/000000?text=GameCraft+AI+Çalışıyor'
+      message: '⚠️ Replicate bağlantı hatası: ' + error.message,
+      testImage: 'https://via.placeholder.com/512x512/ff8800/000000?text=Bağlantı+Test+Ediliyor'
     });
   }
 }
