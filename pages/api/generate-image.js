@@ -6,13 +6,13 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
 
   try {
-    // Alternatif AI API - Replicate (daha güvenilir)
+    // Replicate API - Çok daha stabil
     const response = await fetch(
       'https://api.replicate.com/v1/predictions',
       {
         method: 'POST',
         headers: {
-          'Authorization': 'Token r8_XXXXXXXXXXXXXXXXXXXX', // ÜCRETSİZ TOKEN
+          'Authorization': 'Token r8_MpiUKkCAueSddKnxdpDcvW3JySR0NxC3wQHd7', // YENİ REPLICATE TOKEN BURAYA
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -31,17 +31,18 @@ export default async function handler(req, res) {
       throw new Error('Replicate API hatası');
     }
 
-    const data = await response.json();
+    const prediction = await response.json();
     
-    // Hemen görsel dönmek yerine basit bir placeholder
+    // Hemen görsel dönmek yerine basit bir mesaj
     res.status(200).json({ 
       success: true, 
-      message: '✅ AI görsel oluşturuyor... (Test modu)',
-      testImage: 'https://via.placeholder.com/512x512/00ff88/000000?text=AI+Görsel+Oluşuyor'
+      message: '✅ REPLICATE AI çalışıyor! Gerçek görsel oluşturuluyor...',
+      testImage: 'https://via.placeholder.com/512x512/0088ff/000000?text=Replicate+AI+Çalışıyor',
+      predictionId: prediction.id
     });
     
   } catch (error) {
-    // Eğer replicate de çalışmazsa, local test modu
+    // Hata durumunda test modu
     res.status(200).json({ 
       success: true, 
       message: '🎉 AI Bağlantısı Başarılı! (Test Modu)',
