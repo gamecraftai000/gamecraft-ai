@@ -28,25 +28,18 @@ export default function Home() {
       } else {
         alert('Görsel oluşturulamadı: ' + data.error)
       }
-    } catch (error) {
-      alert('Hata oluştu: ' + error.message)
-    }
-    setLoading(false)
-  }
+    const data = await response.json()
 
-  return (
-    <div style={{ 
-      background: 'linear-gradient(135deg, #1a1f2e, #0d1117)',
-      minHeight: '100vh',
-      color: 'white',
-      padding: '20px',
-      fontFamily: 'Arial'
-    }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '48px', color: '#00ff88' }}>🎮 GameCraft AI</h1>
-          <p style={{ color: '#8899aa' }}>Tüm AI araçları tek yerde!</p>
-        </header>
+if (data.success) {
+  if (data.image) {
+    setGeneratedImage(data.image)
+  } else if (data.testImage) {
+    setGeneratedImage(data.testImage)
+    alert(data.message || 'Test modu: Gerçek AI bağlantısı hazır!')
+  }
+} else {
+  alert('Görsel oluşturulamadı: ' + data.error)
+}
 
         {/* Görsel Üretme Kartı */}
         <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px', marginBottom: '20px' }}>
