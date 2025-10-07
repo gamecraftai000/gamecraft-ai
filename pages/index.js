@@ -116,3 +116,165 @@ export default function Home() {
     } catch (error) {
       alert('Hata: ' + error.message)
     }
+    setLoading('')
+  }
+
+  return (
+    <div style={{ 
+      background: 'linear-gradient(135deg, #1a1f2e, #0d1117)',
+      minHeight: '100vh',
+      color: 'white',
+      padding: '20px',
+      fontFamily: 'Arial'
+    }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <header style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '48px', color: '#00ff88' }}>🎮 GameCraft AI</h1>
+          <p style={{ color: '#8899aa' }}>Tüm AI araçları tek yerde!</p>
+        </header>
+
+        {/* AI Araçları Grid */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+          gap: '20px',
+          marginBottom: '40px'
+        }}>
+          
+          {/* Görsel Üretme */}
+          <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px' }}>
+            <h3>🎨 Görsel Üret</h3>
+            <p style={{ color: '#a0aec0', marginBottom: '15px' }}>Oyun asset'leri oluştur</p>
+            <input 
+              value={imagePrompt}
+              onChange={(e) => setImagePrompt(e.target.value)}
+              placeholder="Örnek: pixel art karakter, fantastik ejderha..."
+              style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#4a5568', border: '1px solid #718096', borderRadius: '5px', color: 'white' }}
+            />
+            <button 
+              onClick={generateImage}
+              disabled={loading === 'image'}
+              style={{ width: '100%', background: loading === 'image' ? '#4a5568' : '#00ff88', color: loading === 'image' ? '#a0aec0' : 'black', padding: '12px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              {loading === 'image' ? 'Oluşturuluyor...' : 'Görsel Oluştur'}
+            </button>
+            {generatedImage && <img src={generatedImage} alt="Generated" style={{ width: '100%', marginTop: '15px', borderRadius: '5px' }} />}
+          </div>
+
+          {/* Kod Yazma */}
+          <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px' }}>
+            <h3>💻 Kod Yaz</h3>
+            <p style={{ color: '#a0aec0', marginBottom: '15px' }}>Oyun kodu yazdır</p>
+            <textarea 
+              value={codePrompt}
+              onChange={(e) => setCodePrompt(e.target.value)}
+              placeholder="Örnek: Unity'de zıplama kodu, C# karakter controller..."
+              style={{ width: '100%', height: '80px', padding: '10px', marginBottom: '10px', background: '#4a5568', border: '1px solid #718096', borderRadius: '5px', color: 'white' }}
+            />
+            <button 
+              onClick={generateCode}
+              disabled={loading === 'code'}
+              style={{ width: '100%', background: loading === 'code' ? '#4a5568' : '#007bff', color: loading === 'code' ? '#a0aec0' : 'white', padding: '12px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              {loading === 'code' ? 'Yazılıyor...' : 'Kod Oluştur'}
+            </button>
+            {generatedCode && (
+              <pre style={{ background: '#1a202c', padding: '15px', borderRadius: '5px', marginTop: '15px', overflowX: 'auto', color: '#00ff88' }}>
+                {generatedCode}
+              </pre>
+            )}
+          </div>
+
+          {/* Müzik Oluşturma */}
+          <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px' }}>
+            <h3>🎵 Müzik Oluştur</h3>
+            <p style={{ color: '#a0aec0', marginBottom: '15px' }}>Oyun müziği bestele</p>
+            <input 
+              value={musicPrompt}
+              onChange={(e) => setMusicPrompt(e.target.value)}
+              placeholder="Örnek: epik savaş müziği, retro oyun müziği..."
+              style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#4a5568', border: '1px solid #718096', borderRadius: '5px', color: 'white' }}
+            />
+            <button 
+              onClick={generateMusic}
+              disabled={loading === 'music'}
+              style={{ width: '100%', background: loading === 'music' ? '#4a5568' : '#ff6b6b', color: loading === 'music' ? '#a0aec0' : 'white', padding: '12px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              {loading === 'music' ? 'Besteleniyor...' : 'Müzik Oluştur'}
+            </button>
+            {generatedMusic && (
+              <div style={{ marginTop: '15px' }}>
+                <audio controls style={{ width: '100%' }}>
+                  <source src={generatedMusic} type="audio/mpeg" />
+                </audio>
+              </div>
+            )}
+          </div>
+
+          {/* Ses Efekti */}
+          <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px' }}>
+            <h3>🔊 Ses Efekti</h3>
+            <p style={{ color: '#a0aec0', marginBottom: '15px' }}>Ses efekti oluştur</p>
+            <input 
+              value={soundPrompt}
+              onChange={(e) => setSoundPrompt(e.target.value)}
+              placeholder="Örnek: lazer sesi, patlama efekti, büyü sesi..."
+              style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#4a5568', border: '1px solid #718096', borderRadius: '5px', color: 'white' }}
+            />
+            <button 
+              onClick={generateSound}
+              disabled={loading === 'sound'}
+              style={{ width: '100%', background: loading === 'sound' ? '#4a5568' : '#9b59b6', color: loading === 'sound' ? '#a0aec0' : 'white', padding: '12px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              {loading === 'sound' ? 'Oluşturuluyor...' : 'Ses Oluştur'}
+            </button>
+            {generatedSound && (
+              <div style={{ marginTop: '15px' }}>
+                <audio controls style={{ width: '100%' }}>
+                  <source src={generatedSound} type="audio/mpeg" />
+                </audio>
+              </div>
+            )}
+          </div>
+
+          {/* Hikaye/Diyalog */}
+          <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px' }}>
+            <h3>📖 Hikaye & Diyalog</h3>
+            <p style={{ color: '#a0aec0', marginBottom: '15px' }}>Hikaye ve diyalog yaz</p>
+            <textarea 
+              value={storyPrompt}
+              onChange={(e) => setStoryPrompt(e.target.value)}
+              placeholder="Örnek: fantastik hikaye, karakter diyaloğu, görev metni..."
+              style={{ width: '100%', height: '80px', padding: '10px', marginBottom: '10px', background: '#4a5568', border: '1px solid #718096', borderRadius: '5px', color: 'white' }}
+            />
+            <button 
+              onClick={generateStory}
+              disabled={loading === 'story'}
+              style={{ width: '100%', background: loading === 'story' ? '#4a5568' : '#f39c12', color: loading === 'story' ? '#a0aec0' : 'white', padding: '12px', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}
+            >
+              {loading === 'story' ? 'Yazılıyor...' : 'Hikaye Oluştur'}
+            </button>
+            {generatedStory && (
+              <div style={{ background: '#1a202c', padding: '15px', borderRadius: '5px', marginTop: '15px', color: '#e0e0e0' }}>
+                {generatedStory}
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Sistem Durumu */}
+        <div style={{ background: '#2d3748', padding: '20px', borderRadius: '10px', border: '1px solid #00ff88' }}>
+          <strong style={{ color: '#00ff88' }}>✅ GameCraft AI - Tüm Araçlar Aktif</strong><br/>
+          <div style={{ color: '#a0aec0', marginTop: '10px' }}>
+            • 🎨 Görsel Üretme: Test Modu<br/>
+            • 💻 Kod Yazma: Hazır<br/>
+            • 🎵 Müzik Oluşturma: Hazır<br/>
+            • 🔊 Ses Efekti: Hazır<br/>
+            • 📖 Hikaye & Diyalog: Hazır
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
