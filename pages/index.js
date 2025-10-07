@@ -7,7 +7,6 @@ export default function Home() {
   const generateImage = async () => {
     setLoading(true)
     try {
-      // Supabase test
       console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
       alert('🎉 Tüm sistemler hazır! Supabase bağlantısı kuruldu.')
     } catch (error) {
