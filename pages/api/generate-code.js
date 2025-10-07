@@ -92,41 +92,10 @@ class ZombieGame {
     }
 }`;
     }
-    else if (prompt.includes('bulmaca') || prompt.includes('seviye')) {
-      generatedCode = `// Bulmaca Oyunu - Unity C#
-using UnityEngine;
-using UnityEngine.UI;
-
-public class PuzzleGame : MonoBehaviour {
-    public Button[] puzzlePieces;
-    public GameObject winPanel;
-    private int solvedPuzzles = 0;
-    
-    void Start() {
-        foreach (Button piece in puzzlePieces) {
-            piece.onClick.AddListener(() => CheckPuzzle(piece));
-        }
-    }
-    
-    void CheckPuzzle(Button piece) {
-        // Bulmaca çözme mantığı
-        solvedPuzzles++;
-        
-        if (solvedPuzzles >= puzzlePieces.Length) {
-            WinGame();
-        }
-    }
-    
-    void WinGame() {
-        winPanel.SetActive(true);
-        Debug.Log("Tebrikler! Bulmaca çözüldü!");
-    }
-}`;
-    }
     else {
       // Genel oyun şablonu
       generatedCode = `// ${prompt} - Oyun Kodu
-// GameCraft AI tarafından oluşturuldu
+// GameCraft AI tarafından oluşturdu
 
 using UnityEngine;
 
