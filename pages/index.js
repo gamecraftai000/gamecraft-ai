@@ -24,22 +24,34 @@ export default function Home() {
       const data = await response.json()
       
       if (data.success) {
-        setGeneratedImage(data.image)
+        if (data.image) {
+          setGeneratedImage(data.image)
+        } else if (data.testImage) {
+          setGeneratedImage(data.testImage)
+          alert(data.message || 'Test modu: Gerçek AI bağlantısı hazır!')
+        }
       } else {
         alert('Görsel oluşturulamadı: ' + data.error)
       }
-    const data = await response.json()
-
-if (data.success) {
-  if (data.image) {
-    setGeneratedImage(data.image)
-  } else if (data.testImage) {
-    setGeneratedImage(data.testImage)
-    alert(data.message || 'Test modu: Gerçek AI bağlantısı hazır!')
+    } catch (error) {
+      alert('Hata oluştu: ' + error.message)
+    }
+    setLoading(false)
   }
-} else {
-  alert('Görsel oluşturulamadı: ' + data.error)
-}
+
+  return (
+    <div style={{ 
+      background: 'linear-gradient(135deg, #1a1f2e, #0d1117)',
+      minHeight: '100vh',
+      color: 'white',
+      padding: '20px',
+      fontFamily: 'Arial'
+    }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <header style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '48px', color: '#00ff88' }}>🎮 GameCraft AI</h1>
+          <p style={{ color: '#8899aa' }}>Tüm AI araçları tek yerde!</p>
+        </header>
 
         {/* Görsel Üretme Kartı */}
         <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px', marginBottom: '20px' }}>
@@ -116,7 +128,7 @@ if (data.success) {
           background: '#2d3748', 
           padding: '20px', 
           borderRadius: '10px',
-          border: '1px solid #00ff88'
+          border: '1px solid '#00ff88'
         }}>
           <strong style={{ color: '#00ff88' }}>✅ Sistem Durumu:</strong><br/>
           <div style={{ color: '#a0aec0', marginTop: '10px' }}>
