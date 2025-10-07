@@ -3,14 +3,33 @@ import { useState } from 'react'
 export default function Home() {
   const [imagePrompt, setImagePrompt] = useState('')
   const [loading, setLoading] = useState(false)
+  const [generatedImage, setGeneratedImage] = useState('')
 
   const generateImage = async () => {
+    if (!imagePrompt.trim()) {
+      alert('Lütfen bir şeyler yazın!')
+      return
+    }
+
     setLoading(true)
     try {
-      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-      alert('🎉 Tüm sistemler hazır! Supabase bağlantısı kuruldu.')
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: imagePrompt }),
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setGeneratedImage(data.image)
+      } else {
+        alert('Görsel oluşturulamadı: ' + data.error)
+      }
     } catch (error) {
-      alert('Hata: ' + error.message)
+      alert('Hata oluştu: ' + error.message)
     }
     setLoading(false)
   }
@@ -29,37 +48,90 @@ export default function Home() {
           <p style={{ color: '#8899aa' }}>Tüm AI araçları tek yerde!</p>
         </header>
 
-        <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px' }}>
+        {/* Görsel Üretme Kartı */}
+        <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px', marginBottom: '20px' }}>
           <h3>🎨 Görsel Üret</h3>
+          <p style={{ color: '#a0aec0', marginBottom: '15px' }}>AI ile oyun asset'leri oluştur</p>
+          
           <input 
             value={imagePrompt}
             onChange={(e) => setImagePrompt(e.target.value)}
-            placeholder="Pixel art karakter..."
-            style={{ width: '100%', padding: '10px', margin: '10px 0' }}
+            placeholder="Örnek: pixel art karakter, fantastik ejderha, sci-fi spaceship..."
+            style={{ 
+              width: '100%', 
+              background: '#4a5568',
+              border: '1px solid #718096',
+              borderRadius: '5px',
+              padding: '12px',
+              color: 'white',
+              marginBottom: '15px',
+              fontSize: '16px'
+            }}
           />
+          
           <button 
             onClick={generateImage}
             disabled={loading}
             style={{ 
               width: '100%', 
-              background: '#00ff88', 
-              color: 'black', 
-              padding: '12px', 
+              background: loading ? '#4a5568' : '#00ff88', 
+              color: loading ? '#a0aec0' : 'black', 
+              padding: '15px', 
               border: 'none',
               borderRadius: '5px',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              fontSize: '16px',
+              cursor: loading ? 'not-allowed' : 'pointer'
             }}
           >
-            {loading ? 'Oluşturuluyor...' : 'Oluştur'}
+            {loading ? '🔄 AI Görsel Oluşturuyor... (30-60 saniye)' : '✨ Görsel Oluştur'}
           </button>
         </div>
 
-        <div style={{ marginTop: '20px', color: '#00ff88' }}>
-          <strong>✅ Sistem Durumu:</strong><br/>
-          • GitHub: Hazır<br/>
-          • Vercel: Hazır<br/>
-          • Supabase: Hazır<br/>
-          • Hugging Face: Hazır
+        {/* Oluşturulan Görsel */}
+        {generatedImage && (
+          <div style={{ background: '#2d3748', padding: '25px', borderRadius: '10px', marginBottom: '20px' }}>
+            <h3>🖼️ Oluşturulan Görsel</h3>
+            <img 
+              src={generatedImage} 
+              alt="AI generated" 
+              style={{ 
+                maxWidth: '100%', 
+                borderRadius: '10px',
+                border: '2px solid #00ff88'
+              }}
+            />
+            <button 
+              onClick={() => setGeneratedImage('')}
+              style={{
+                marginTop: '15px',
+                background: '#718096',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              Temizle
+            </button>
+          </div>
+        )}
+
+        {/* Sistem Durumu */}
+        <div style={{ 
+          background: '#2d3748', 
+          padding: '20px', 
+          borderRadius: '10px',
+          border: '1px solid #00ff88'
+        }}>
+          <strong style={{ color: '#00ff88' }}>✅ Sistem Durumu:</strong><br/>
+          <div style={{ color: '#a0aec0', marginTop: '10px' }}>
+            • GitHub: Hazır<br/>
+            • Vercel: Hazır<br/>
+            • Hugging Face AI: {loading ? 'Çalışıyor...' : 'Hazır'}<br/>
+            • Supabase: Hazır
+          </div>
         </div>
       </div>
     </div>
