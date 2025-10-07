@@ -128,7 +128,7 @@ export default function Home() {
           background: '#2d3748', 
           padding: '20px', 
           borderRadius: '10px',
-          border: '1px solid '#00ff88'
+          border: '1px solid #00ff88'
         }}>
           <strong style={{ color: '#00ff88' }}>✅ Sistem Durumu:</strong><br/>
           <div style={{ color: '#a0aec0', marginTop: '10px' }}>
