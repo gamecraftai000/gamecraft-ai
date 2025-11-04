@@ -1,12 +1,15 @@
-// pages/index.js
+// pages/index.js - GÜNCELLENMİŞ VERSİYON
 import { useState } from 'react';
 
 export default function Home() {
   const [gamePrompt, setGamePrompt] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [brainLoading, setBrainLoading] = useState(false);
+  const [brainResult, setBrainResult] = useState(null);
   const [activeTab, setActiveTab] = useState('code');
 
+  // NORMAL KOD ÜRETME
   const generateGameCode = async () => {
     if (!gamePrompt.trim()) {
       alert('Lütfen bir oyun fikri yazın!');
@@ -36,6 +39,45 @@ export default function Home() {
       setGeneratedCode('API bağlantı hatası. Lütfen daha sonra tekrar deneyin.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // BEYİN AI İLE ÜRETME
+  const handleBrainAI = async () => {
+    if (!gamePrompt.trim()) {
+      alert('Lütfen bir oyun fikri yazın!');
+      return;
+    }
+
+    setBrainLoading(true);
+    setBrainResult(null);
+    setGeneratedCode('');
+
+    try {
+      const response = await fetch('/api/brain', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          userPrompt: gamePrompt 
+        }),
+      });
+
+      const data = await response.json();
+      setBrainResult(data);
+      
+      if (data.generatedCode) {
+        setGeneratedCode(data.generatedCode);
+      }
+      
+    } catch (error) {
+      console.error('Beyin AI hatası:', error);
+      setBrainResult({ 
+        error: 'Beyin AI bağlantı hatası: ' + error.message 
+      });
+    } finally {
+      setBrainLoading(false);
     }
   };
 
@@ -74,18 +116,44 @@ export default function Home() {
               rows="4"
             />
             
-            <button 
-              onClick={generateGameCode} 
-              disabled={loading}
-              className="generate-btn"
-            >
-              {loading ? '🔄 AI Kod Yazıyor...' : '🎮 Oyun Kodunu Üret'}
-            </button>
+            <div className="button-group">
+              <button 
+                onClick={generateGameCode} 
+                disabled={loading}
+                className="generate-btn"
+              >
+                {loading ? '🔄 AI Kod Yazıyor...' : '🎮 Oyun Kodunu Üret'}
+              </button>
+              
+              <button 
+                onClick={handleBrainAI} 
+                disabled={brainLoading}
+                className="brain-btn"
+              >
+                {brainLoading ? '🧠 AI Planlıyor...' : '🧠 BEYİN AI ile Üret'}
+              </button>
+            </div>
           </div>
 
+          {/* BEYİN AI SONUÇLARI */}
+          {brainResult && (
+            <div className="brain-result">
+              <h3>✨ AI Analiz Sonucu:</h3>
+              <div className="plan-box">
+                <pre>{JSON.stringify(brainResult.plan, null, 2)}</pre>
+              </div>
+              {brainResult.error && (
+                <div className="error-box">
+                  <strong>Hata:</strong> {brainResult.error}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ÜRETİLEN KOD */}
           {generatedCode && (
             <div className="result-box">
-              <h3>✨ AI Tarafından Üretilen Kod:</h3>
+              <h3>💻 Üretilen Kod:</h3>
               <pre className="code-output">
                 {generatedCode}
               </pre>
@@ -132,11 +200,6 @@ export default function Home() {
           text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .header p {
-          font-size: 1.2rem;
-          opacity: 0.9;
-        }
-
         .tabs {
           display: flex;
           justify-content: center;
@@ -161,10 +224,6 @@ export default function Home() {
           font-weight: bold;
         }
 
-        .tabs button:hover {
-          transform: translateY(-2px);
-        }
-
         .section {
           background: white;
           padding: 30px;
@@ -173,15 +232,16 @@ export default function Home() {
           box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .section h2 {
-          color: #333;
-          margin-bottom: 15px;
-        }
-
         .input-group {
           display: flex;
           flex-direction: column;
           gap: 15px;
+        }
+
+        .button-group {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
         }
 
         textarea {
@@ -195,29 +255,40 @@ export default function Home() {
           font-family: inherit;
         }
 
-        textarea:focus {
-          outline: none;
-          border-color: #667eea;
-        }
-
         .generate-btn {
           background: linear-gradient(135deg, #667eea, #764ba2);
           color: white;
           padding: 15px 30px;
           border: none;
           border-radius: 10px;
-          font-size: 18px;
+          font-size: 16px;
           font-weight: bold;
           cursor: pointer;
           transition: all 0.3s ease;
+          flex: 1;
         }
 
-        .generate-btn:hover:not(:disabled) {
+        .brain-btn {
+          background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+          color: white;
+          padding: 15px 30px;
+          border: none;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex: 1;
+        }
+
+        .generate-btn:hover:not(:disabled),
+        .brain-btn:hover:not(:disabled) {
           transform: translateY(-2px);
           box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .generate-btn:disabled {
+        .generate-btn:disabled,
+        .brain-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
         }
@@ -228,6 +299,29 @@ export default function Home() {
           border-radius: 10px;
           border-left: 4px solid #667eea;
           margin-top: 20px;
+        }
+
+        .brain-result {
+          background: #fff3cd;
+          padding: 20px;
+          border-radius: 10px;
+          border-left: 4px solid #ffc107;
+          margin-top: 20px;
+        }
+
+        .plan-box {
+          background: white;
+          padding: 15px;
+          border-radius: 5px;
+          margin-top: 10px;
+        }
+
+        .error-box {
+          background: #f8d7da;
+          color: #721c24;
+          padding: 10px;
+          border-radius: 5px;
+          margin-top: 10px;
         }
 
         .code-output {
@@ -250,10 +344,6 @@ export default function Home() {
           border-radius: 5px;
           cursor: pointer;
           margin-top: 10px;
-        }
-
-        .copy-btn:hover {
-          background: #38a169;
         }
 
         .coming-soon {
