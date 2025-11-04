@@ -135,20 +135,20 @@ export default function Home() {
             </div>
           </div>
 
-          {/* BEYİN AI SONUÇLARI */}
-          {brainResult && (
-            <div className="brain-result">
-              <h3>✨ AI Analiz Sonucu:</h3>
-              <div className="plan-box">
-                <pre>{JSON.stringify(brainResult.plan, null, 2)}</pre>
-              </div>
-              {brainResult.error && (
-                <div className="error-box">
-                  <strong>Hata:</strong> {brainResult.error}
-                </div>
-              )}
-            </div>
-          )}
+// Beyin sonuçlarını daha güzel göster
+{brainResult && (
+  <div className="brain-result">
+    <h3>✨ AI Analiz Sonucu:</h3>
+    <div className="plan-box">
+      <pre>{JSON.stringify(brainResult.plan, null, 2)}</pre>
+    </div>
+    {brainResult.generatedCode && (
+      <div className="code-info">
+        <small>Kaynak: {brainResult.source || 'brain_ai'}</small>
+      </div>
+    )}
+  </div>
+)}
 
           {/* ÜRETİLEN KOD */}
           {generatedCode && (
