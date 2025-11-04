@@ -31,7 +31,8 @@ export default async function handler(req, res) {
     // 1. ÖNCE BASİT BİR TEST İSTEĞİ YAPALIM
     const testPrompt = "Merhaba, nasılsın?";
     
-    const geminiURL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+    // URL'yi şu şekilde değiştir:
+const geminiURL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
     
     console.log('Gemini URL:', geminiURL);
 
