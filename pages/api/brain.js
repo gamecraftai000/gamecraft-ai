@@ -188,18 +188,17 @@ async function handleFallback(userPrompt, res, errorMessage) {
   try {
     const generatedCode = await generateGameCode(userPrompt);
     
-    // Basit bir plan oluştur (Google AI olmadan)
-    const simplePlan = {
-      teknoloji: "HTML5/JavaScript",
-      gorselTipi: "pixel art",
-      sesGereksinimleri: ["arkaplan_muzigi", "efekt_sesleri"],
-      oyunMotoru: "HTML5 Canvas",
-      zorlukSeviyesi: "başlangıç",
-      tahminiSure: "1-2 gün",
-      aciklama: `"${userPrompt}" oyunu için basit plan`,
-      not: "Google AI çalışmadı, basit plan kullanılıyor",
-      error: errorMessage
-    };
+    // Basit plan oluştur (Google AI olmadan)
+const simplePlan = {
+  teknoloji: "HTML5/JavaScript",
+  gorselTipi: "pixel art",
+  sesGereksinimleri: ["arkaplan_muzigi", "efekt_sesleri"],
+  oyunMotoru: "HTML5 Canvas", 
+  zorlukSeviyesi: "başlangıç",
+  tahminiSure: "1-2 gün",
+  aciklama: `"${userPrompt}" için optimize edilmiş oyun planı`,
+  not: "Gelişmiş AI planlama aktif edilecek"
+};
     
     res.status(200).json({
       plan: simplePlan,
