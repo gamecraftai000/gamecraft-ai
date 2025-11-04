@@ -189,15 +189,16 @@ async function handleFallback(userPrompt, res, errorMessage) {
     const generatedCode = await generateGameCode(userPrompt);
     
     // Basit plan oluştur (Google AI olmadan)
+// Fallback kısmını daha iyi hale getirelim
 const simplePlan = {
   teknoloji: "HTML5/JavaScript",
   gorselTipi: "pixel art",
   sesGereksinimleri: ["arkaplan_muzigi", "efekt_sesleri"],
-  oyunMotoru: "HTML5 Canvas", 
-  zorlukSeviyesi: "başlangıç",
+  oyunMotoru: "HTML5 Canvas",
+  zorlukSeviyesi: "başlangıç", 
   tahminiSure: "1-2 gün",
-  aciklama: `"${userPrompt}" için optimize edilmiş oyun planı`,
-  not: "Gelişmiş AI planlama aktif edilecek"
+  aciklama: `"${userPrompt}" için AI destekli oyun planı`,
+  not: "Tam AI entegrasyonu yakında aktif edilecek"
 };
     
     res.status(200).json({
