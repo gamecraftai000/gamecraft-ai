@@ -1,68 +1,22 @@
-// pages/index.js - TAMAMEN GÜNCELLENMİŞ
+// pages/index.js - BEYİN AI KOORDİNATÖR ile TAM KOD
 import { useState } from 'react';
 
 export default function Home() {
-  // Oyun Kodlama State'leri
-  const [gamePrompt, setGamePrompt] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // Beyin AI State'leri
-  const [brainLoading, setBrainLoading] = useState(false);
+  // Ana state'ler
+  const [userPrompt, setUserPrompt] = useState('');
   const [brainResult, setBrainResult] = useState(null);
-  
-  // Görsel Üretim State'leri
-  const [imagePrompt, setImagePrompt] = useState('');
-  const [generatedImage, setGeneratedImage] = useState('');
-  const [imageLoading, setImageLoading] = useState(false);
-  const [imageStyle, setImageStyle] = useState('pixel art');
-  
-  // Diğer State'ler
-  const [activeTab, setActiveTab] = useState('code');
+  const [brainLoading, setBrainLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('brain');
 
-  // NORMAL KOD ÜRETME
-  const generateGameCode = async () => {
-    if (!gamePrompt.trim()) {
-      alert('Lütfen bir oyun fikri yazın!');
-      return;
-    }
-
-    setLoading(true);
-    setGeneratedCode('');
-
-    try {
-      const response = await fetch('/api/generate-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: gamePrompt }),
-      });
-
-      if (!response.ok) {
-        throw new Error('API hatası: ' + response.status);
-      }
-
-      const data = await response.json();
-      setGeneratedCode(data.code || 'Kod üretilemedi');
-    } catch (error) {
-      console.error('Hata:', error);
-      setGeneratedCode('API bağlantı hatası. Lütfen daha sonra tekrar deneyin.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // BEYİN AI İLE ÜRETME
+  // BEYİN AI KOORDİNATÖR - Ana fonksiyon
   const handleBrainAI = async () => {
-    if (!gamePrompt.trim()) {
+    if (!userPrompt.trim()) {
       alert('Lütfen bir oyun fikri yazın!');
       return;
     }
 
     setBrainLoading(true);
     setBrainResult(null);
-    setGeneratedCode('');
 
     try {
       const response = await fetch('/api/brain', {
@@ -71,28 +25,30 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          userPrompt: gamePrompt 
+          userPrompt: userPrompt 
         }),
       });
 
       const data = await response.json();
       setBrainResult(data);
       
-      if (data.generatedCode) {
-        setGeneratedCode(data.generatedCode);
-      }
-      
     } catch (error) {
       console.error('Beyin AI hatası:', error);
       setBrainResult({ 
-        error: 'Beyin AI bağlantı hatası: ' + error.message 
+        error: 'Beyin AI bağlantı hatası: ' + error.message,
+        status: 'failed'
       });
     } finally {
       setBrainLoading(false);
     }
   };
 
-  // GÖRSEL ÜRETME
+  // Manuel görsel üretimi için state'ler
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [generatedImage, setGeneratedImage] = useState('');
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageStyle, setImageStyle] = useState('pixel art');
+
   const generateImage = async () => {
     if (!imagePrompt.trim()) {
       alert('Lütfen görsel için bir açıklama yazın!');
@@ -129,117 +85,173 @@ export default function Home() {
     <div className="container">
       <header className="header">
         <h1>🎮 GameCraft AI</h1>
-        <p>Tüm AI araçları tek yerde!</p>
+        <p>Tüm AI araçları tek yerde! Beyin AI koordinatör aktif!</p>
       </header>
 
       {/* Sekmeler */}
       <div className="tabs">
         <button 
-          className={activeTab === 'code' ? 'active' : ''} 
-          onClick={() => setActiveTab('code')}
+          className={activeTab === 'brain' ? 'active' : ''} 
+          onClick={() => setActiveTab('brain')}
         >
-          🎯 Oyun Tasarla
+          🧠 BEYİN AI Koordinatör
         </button>
         <button 
           className={activeTab === 'image' ? 'active' : ''} 
           onClick={() => setActiveTab('image')}
         >
-          🎨 Görsel Üret
+          🎨 Manuel Görsel Üret
         </button>
       </div>
 
-      {/* Oyun Kodlama Bölümü */}
-      {activeTab === 'code' && (
+      {/* BEYİN AI KOORDİNATÖR BÖLÜMÜ */}
+      {activeTab === 'brain' && (
         <section className="section">
-          <h2>🚀 Oyun Tasarla</h2>
-          <p>Oyun fikrini yaz, tüm kodları AI yazsın!</p>
+          <h2>🚀 Beyin AI Koordinatör</h2>
+          <p>Tek bir oyun fikri yaz, AI tüm süreci otomatik yönetsin!</p>
           
           <div className="input-group">
             <textarea
-              value={gamePrompt}
-              onChange={(e) => setGamePrompt(e.target.value)}
-              placeholder="Örnek: 'Zıplayan top oyunu, top ekran kenarlarından seksin, skor tutulsun'"
+              value={userPrompt}
+              onChange={(e) => setUserPrompt(e.target.value)}
+              placeholder="Örnek: 'Zombi savaş oyunu yap. Oyuncu zombilerden kaçsın, silah toplayabilsin, karanlık bir şehirde geçsin.'"
               rows="4"
             />
             
-            <div className="button-group">
-              <button 
-                onClick={generateGameCode} 
-                disabled={loading}
-                className="generate-btn"
-              >
-                {loading ? '🔄 AI Kod Yazıyor...' : '🎮 Oyun Kodunu Üret'}
-              </button>
-              
-              <button 
-                onClick={handleBrainAI} 
-                disabled={brainLoading}
-                className="brain-btn"
-              >
-                {brainLoading ? '🧠 AI Planlıyor...' : '🧠 BEYİN AI ile Üret'}
-              </button>
-            </div>
+            <button 
+              onClick={handleBrainAI} 
+              disabled={brainLoading}
+              className="brain-btn"
+            >
+              {brainLoading ? '🧠 AI Tüm Süreci Yönetiyor...' : '🚀 BEYİN AI ile Tümünü Üret'}
+            </button>
           </div>
 
-          {/* BEYİN AI SONUÇLARI */}
+          {/* BEYİN AI SONUÇLARI - KOORDİNATÖR VERSİYON */}
           {brainResult && (
             <div className="brain-result">
-              <h3>✨ AI Analiz Sonucu:</h3>
-              <div className="plan-box">
-                <pre>{JSON.stringify(brainResult.plan, null, 2)}</pre>
-              </div>
-              {brainResult.source && (
-                <div className="code-info">
-                  <small>Kaynak: {brainResult.source}</small>
+              <h3>✨ AI Koordinatör Sonuçları:</h3>
+              
+              {/* PLAN */}
+              {brainResult.plan && (
+                <div className="plan-box">
+                  <h4>📋 Oyun Planı:</h4>
+                  <pre>{JSON.stringify(brainResult.plan, null, 2)}</pre>
                 </div>
               )}
+
+              {/* ÜRETİLEN GÖRSELER */}
+              {brainResult.images && brainResult.images.images && brainResult.images.images.length > 0 && (
+                <div className="images-result">
+                  <h4>🎨 Üretilen Görseller:</h4>
+                  <div className="images-grid">
+                    {brainResult.images.images.map((image, index) => (
+                      <div key={index} className="image-item">
+                        {image.result && image.result.imageUrl ? (
+                          <>
+                            <img 
+                              src={image.result.imageUrl} 
+                              alt={`Generated ${index}`}
+                              className="generated-image"
+                            />
+                            <div className="image-info">
+                              <small><strong>Prompt:</strong> {image.prompt}</small>
+                              <small><strong>Kaynak:</strong> {image.result.source}</small>
+                            </div>
+                            <div className="image-actions">
+                              <a 
+                                href={image.result.imageUrl} 
+                                download={`gamecraft-${Date.now()}-${index}.png`}
+                                className="download-btn"
+                              >
+                                💾 İndir
+                              </a>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="image-error">
+                            <p>❌ Görsel üretilemedi</p>
+                            <small>{image.result?.error}</small>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ÜRETİLEN KOD */}
+              {brainResult.code && brainResult.code.code && (
+                <div className="result-box">
+                  <h4>💻 Üretilen Kod:</h4>
+                  <pre className="code-output">
+                    {brainResult.code.code}
+                  </pre>
+                  <div className="code-info">
+                    <small><strong>Kaynak:</strong> {brainResult.code.source}</small>
+                    {brainResult.code.error && (
+                      <small><strong>Not:</strong> {brainResult.code.error}</small>
+                    )}
+                  </div>
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(brainResult.code.code)}
+                    className="copy-btn"
+                  >
+                    📋 Kodu Kopyala
+                  </button>
+                </div>
+              )}
+
+              {/* HATA DURUMU */}
               {brainResult.error && (
                 <div className="error-box">
-                  <strong>Not:</strong> {brainResult.error}
+                  <h4>❌ Hata:</h4>
+                  <p>{brainResult.error}</p>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* ÜRETİLEN KOD */}
-          {generatedCode && (
-            <div className="result-box">
-              <h3>💻 Üretilen Kod:</h3>
-              <pre className="code-output">
-                {generatedCode}
-              </pre>
-              <button 
-                onClick={() => navigator.clipboard.writeText(generatedCode)}
-                className="copy-btn"
-              >
-                📋 Kodu Kopyala
-              </button>
+              {/* DURUM */}
+              <div className="status-info">
+                <small>
+                  <strong>Durum:</strong> {brainResult.status} • 
+                  <strong> Zaman:</strong> {brainResult.timestamp && new Date(brainResult.timestamp).toLocaleTimeString()}
+                </small>
+              </div>
             </div>
           )}
 
           {/* Örnek Oyun Fikirleri */}
           <div className="example-prompts">
-            <h4>💡 Örnek Oyun Fikirleri:</h4>
+            <h4>💡 Örnek Oyun Fikirleri (Beyin AI ile Test Edin):</h4>
             <div className="prompt-grid">
-              <button onClick={() => setGamePrompt('Zombi savaş oyunu yap. Oyuncu zombilerden kaçsın, silah toplayabilsin.')}>
-                🧟 Zombi Oyunu
+              <button onClick={() => setUserPrompt('Zombi savaş oyunu yap. Oyuncu zombilerden kaçsın, silah toplayabilsin, karanlık bir şehirde geçsin.')}>
+                🧟 Zombi Savaş Oyunu
               </button>
-              <button onClick={() => setGamePrompt('Uzay gemisi ile asteroid vurma oyunu. Skor sistemi olsun.')}>
-                🚀 Uzay Oyunu
+              <button onClick={() => setUserPrompt('Uzay gemisi ile asteroid vurma oyunu. Skor sistemi olsun, farklı asteroid türleri olsun.')}>
+                🚀 Uzay Savaş Oyunu
               </button>
-              <button onClick={() => setGamePrompt('Zıplayan top oyunu. Top duvarlardan seksin, skor tutulsun.')}>
-                🎯 Top Oyunu
+              <button onClick={() => setUserPrompt('Araba yarışı oyunu yap. Farklı araba modelleri, hızlanma ve drift mekanikleri olsun.')}>
+                🏎️ Araba Yarışı Oyunu
+              </button>
+              <button onClick={() => setUserPrompt('Zıplayan top oyunu. Top duvarlardan seksin, skor tutulsun, giderek hızlansın.')}>
+                🎯 Zıplayan Top Oyunu
+              </button>
+              <button onClick={() => setUserPrompt('Labirentten kaçış oyunu. Karanlık labirent, düşmanlar, hazineler olsun.')}>
+                🗺️ Labirent Oyunu
+              </button>
+              <button onClick={() => setUserPrompt('Fantastik RPG oyunu. Büyücü karakter, ejderha düşmanlar, büyü sistem olsun.')}>
+                🐉 Fantazi RPG Oyunu
               </button>
             </div>
           </div>
         </section>
       )}
 
-      {/* Görsel Üretim Bölümü */}
+      {/* MANUEL GÖRSEL ÜRETİM BÖLÜMÜ */}
       {activeTab === 'image' && (
         <section className="section">
-          <h2>🎨 Görsel Üret</h2>
-          <p>Oyun karakterleri, asset'ler ve arka planlar oluştur</p>
+          <h2>🎨 Manuel Görsel Üretim</h2>
+          <p>Sadece görsel üretmek isterseniz bu sekmeyi kullanın</p>
           
           <div className="input-group">
             <div className="style-selection">
@@ -304,14 +316,23 @@ export default function Home() {
           <div className="example-prompts">
             <h4>💡 Örnek Görsel Prompt'ları:</h4>
             <div className="prompt-grid">
-              <button onClick={() => setImagePrompt('savaşçı zombi karakteri, yeşil ten, kırmızı gözler, pixel art')}>
+              <button onClick={() => setImagePrompt('savaşçı zombi karakteri, yeşil ten, kırmızı gözler, yırtık kıyafetler, pixel art')}>
                 🧟 Zombi Karakteri
               </button>
-              <button onClick={() => setImagePrompt('uzay gemisi, mavi ışıklar, futuristik, 3D model')}>
+              <button onClick={() => setImagePrompt('uzay gemisi, mavi ışıklar, futuristik tasarım, 3D model')}>
                 🚀 Uzay Gemisi
               </button>
-              <button onClick={() => setImagePrompt('fantastik kale, ortaçağ, büyük kapılar, cartoon style')}>
+              <button onClick={() => setImagePrompt('fantastik kale, ortaçağ mimarisi, büyük kapılar, kuleler, cartoon style')}>
                 🏰 Fantazi Kalesi
+              </button>
+              <button onClick={() => setImagePrompt('sport araba, kırmızı, hızlı, aerodinamik, realistic')}>
+                🏎️ Spor Araba
+              </button>
+              <button onClick={() => setImagePrompt('büyücü karakter, uzun pelerin, asa, sihirli efektler, fantasy art')}>
+                🧙 Büyücü Karakter
+              </button>
+              <button onClick={() => setImagePrompt('uzaylı karakteri, yeşil ten, büyük gözler, futuristik, vector art')}>
+                👽 Uzaylı Karakter
               </button>
             </div>
           </div>
@@ -320,19 +341,20 @@ export default function Home() {
 
       {/* Alt Bilgi */}
       <footer className="footer">
-        <p>🎯 GameCraft AI - Tüm oyun geliştirme araçları tek platformda!</p>
+        <p>🎯 GameCraft AI - Beyin AI Koordinatör Aktif! Tüm süreç otomatik!</p>
         <div className="feature-status">
-          <span className="status-active">✅ Oyun Kodlama: Aktif</span>
-          <span className="status-active">✅ Beyin AI: Aktif</span>
-          <span className="status-active">✅ Görsel Üretim: Aktif</span>
+          <span className="status-active">✅ Beyin AI Koordinatör: AKTİF</span>
+          <span className="status-active">✅ Kod Üretimi: AKTİF</span>
+          <span className="status-active">✅ Görsel Üretimi: AKTİF</span>
           <span className="status-coming">🔜 Ses Üretimi: Yakında</span>
           <span className="status-coming">🔜 Müzik Üretimi: Yakında</span>
+          <span className="status-coming">🔜 Hikaye Üretimi: Yakında</span>
         </div>
       </footer>
 
       <style jsx>{`
         .container {
-          max-width: 1000px;
+          max-width: 1200px;
           margin: 0 auto;
           padding: 20px;
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -347,13 +369,13 @@ export default function Home() {
         }
 
         .header h1 {
-          font-size: 2.5rem;
+          font-size: 2.8rem;
           margin-bottom: 10px;
           text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .header p {
-          font-size: 1.2rem;
+          font-size: 1.3rem;
           opacity: 0.9;
         }
 
@@ -361,16 +383,17 @@ export default function Home() {
           display: flex;
           justify-content: center;
           margin-bottom: 30px;
-          gap: 10px;
+          gap: 15px;
         }
 
         .tabs button {
-          padding: 12px 24px;
+          padding: 15px 30px;
           border: none;
           border-radius: 25px;
           background: rgba(255,255,255,0.2);
           color: white;
-          font-size: 16px;
+          font-size: 18px;
+          font-weight: bold;
           cursor: pointer;
           transition: all 0.3s ease;
         }
@@ -378,71 +401,84 @@ export default function Home() {
         .tabs button.active {
           background: white;
           color: #667eea;
-          font-weight: bold;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .tabs button:hover {
           transform: translateY(-2px);
+          background: rgba(255,255,255,0.3);
         }
 
         .section {
           background: white;
           padding: 30px;
           margin: 20px 0;
-          border-radius: 15px;
+          border-radius: 20px;
           box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .section h2 {
           color: #333;
           margin-bottom: 15px;
+          font-size: 2rem;
         }
 
         .input-group {
           display: flex;
           flex-direction: column;
-          gap: 15px;
-        }
-
-        .button-group {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
+          gap: 20px;
         }
 
         .style-selection {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
         }
 
         .style-selection label {
           font-weight: bold;
           color: #333;
+          font-size: 16px;
         }
 
         .style-select {
-          padding: 12px;
+          padding: 15px;
           border: 2px solid #e1e5e9;
-          border-radius: 8px;
+          border-radius: 10px;
           font-size: 16px;
           background: white;
         }
 
         textarea {
           width: 100%;
-          padding: 15px;
+          padding: 20px;
           border: 2px solid #e1e5e9;
-          border-radius: 10px;
+          border-radius: 15px;
           font-size: 16px;
           resize: vertical;
           min-height: 120px;
           font-family: inherit;
+          transition: border-color 0.3s ease;
         }
 
         textarea:focus {
           outline: none;
           border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .brain-btn {
+          background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+          color: white;
+          padding: 20px 40px;
+          border: none;
+          border-radius: 15px;
+          font-size: 18px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 10px;
         }
 
         .generate-btn {
@@ -455,111 +491,112 @@ export default function Home() {
           font-weight: bold;
           cursor: pointer;
           transition: all 0.3s ease;
-          flex: 1;
-        }
-
-        .brain-btn {
-          background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-          color: white;
-          padding: 15px 30px;
-          border: none;
-          border-radius: 10px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          flex: 1;
         }
 
         .image-btn {
           background: linear-gradient(135deg, #4ecdc4, #44a08d);
         }
 
-        .generate-btn:hover:not(:disabled),
         .brain-btn:hover:not(:disabled),
-        .image-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .generate-btn:hover:not(:disabled) {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
-        .generate-btn:disabled,
         .brain-btn:disabled,
-        .image-btn:disabled {
+        .generate-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+          transform: none;
         }
 
         .result-box {
           background: #f8f9fa;
-          padding: 20px;
-          border-radius: 10px;
-          border-left: 4px solid #667eea;
-          margin-top: 20px;
+          padding: 25px;
+          border-radius: 15px;
+          border-left: 5px solid #667eea;
+          margin-top: 25px;
         }
 
         .brain-result {
           background: #fff3cd;
-          padding: 20px;
-          border-radius: 10px;
-          border-left: 4px solid #ffc107;
-          margin-top: 20px;
+          padding: 25px;
+          border-radius: 15px;
+          border-left: 5px solid #ffc107;
+          margin-top: 25px;
         }
 
         .plan-box {
           background: white;
-          padding: 15px;
-          border-radius: 5px;
-          margin-top: 10px;
+          padding: 20px;
+          border-radius: 10px;
+          margin-top: 15px;
           overflow-x: auto;
+          border: 1px solid #e1e5e9;
+        }
+
+        .plan-box h4 {
+          color: #333;
+          margin-bottom: 15px;
+          font-size: 1.3rem;
         }
 
         .error-box {
           background: #f8d7da;
           color: #721c24;
-          padding: 10px;
-          border-radius: 5px;
-          margin-top: 10px;
+          padding: 15px;
+          border-radius: 10px;
+          margin-top: 15px;
+          border-left: 4px solid #dc3545;
         }
 
         .code-info {
-          margin-top: 10px;
+          margin-top: 15px;
           color: #666;
           font-size: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
         }
 
         .code-output {
           background: #2d3748;
           color: #e2e8f0;
-          padding: 20px;
-          border-radius: 8px;
+          padding: 25px;
+          border-radius: 10px;
           overflow-x: auto;
           font-family: 'Courier New', monospace;
           white-space: pre-wrap;
-          max-height: 400px;
+          max-height: 500px;
           overflow-y: auto;
+          line-height: 1.5;
         }
 
         .copy-btn {
           background: #48bb78;
           color: white;
-          padding: 8px 16px;
+          padding: 10px 20px;
           border: none;
-          border-radius: 5px;
+          border-radius: 8px;
           cursor: pointer;
-          margin-top: 10px;
+          margin-top: 15px;
           margin-right: 10px;
+          font-size: 14px;
+          transition: background 0.3s ease;
         }
 
         .download-btn {
           background: #4299e1;
           color: white;
-          padding: 8px 16px;
+          padding: 10px 20px;
           border: none;
-          border-radius: 5px;
+          border-radius: 8px;
           cursor: pointer;
           text-decoration: none;
           display: inline-block;
-          margin-top: 10px;
+          margin-top: 15px;
+          font-size: 14px;
+          transition: background 0.3s ease;
         }
 
         .copy-btn:hover {
@@ -572,89 +609,154 @@ export default function Home() {
 
         .image-result {
           background: #f8f9fa;
-          padding: 20px;
-          border-radius: 10px;
-          border-left: 4px solid #4ecdc4;
-          margin-top: 20px;
+          padding: 25px;
+          border-radius: 15px;
+          border-left: 5px solid #4ecdc4;
+          margin-top: 25px;
           text-align: center;
         }
 
         .generated-image {
           max-width: 100%;
-          max-height: 400px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          margin: 15px 0;
+          max-height: 500px;
+          border-radius: 10px;
+          box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+          margin: 20px 0;
         }
 
         .image-actions {
           display: flex;
-          gap: 10px;
+          gap: 15px;
           justify-content: center;
           flex-wrap: wrap;
         }
 
+        .images-result {
+          background: #f8f9fa;
+          padding: 25px;
+          border-radius: 15px;
+          border-left: 5px solid #4ecdc4;
+          margin-top: 25px;
+        }
+
+        .images-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 25px;
+          margin-top: 20px;
+        }
+
+        .image-item {
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transition: transform 0.3s ease;
+        }
+
+        .image-item:hover {
+          transform: translateY(-5px);
+        }
+
+        .image-info {
+          margin-top: 15px;
+          font-size: 13px;
+          color: #666;
+          text-align: left;
+        }
+
+        .image-info small {
+          display: block;
+          margin: 5px 0;
+          line-height: 1.4;
+        }
+
+        .image-error {
+          padding: 25px;
+          background: #f8d7da;
+          border-radius: 10px;
+          color: #721c24;
+          text-align: center;
+        }
+
+        .status-info {
+          margin-top: 20px;
+          padding: 15px;
+          background: #e9ecef;
+          border-radius: 10px;
+          text-align: center;
+          color: #666;
+        }
+
         .example-prompts {
-          margin-top: 30px;
-          padding-top: 20px;
-          border-top: 1px solid #e1e5e9;
+          margin-top: 35px;
+          padding-top: 25px;
+          border-top: 2px solid #e1e5e9;
         }
 
         .example-prompts h4 {
           color: #333;
-          margin-bottom: 15px;
+          margin-bottom: 20px;
+          font-size: 1.3rem;
         }
 
         .prompt-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 10px;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 15px;
         }
 
         .prompt-grid button {
           background: #e9ecef;
-          border: 1px solid #dee2e6;
-          padding: 10px 15px;
-          border-radius: 8px;
+          border: 2px solid #dee2e6;
+          padding: 15px;
+          border-radius: 10px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           text-align: left;
+          font-size: 14px;
         }
 
         .prompt-grid button:hover {
           background: #dee2e6;
-          transform: translateY(-1px);
+          transform: translateY(-3px);
+          border-color: #667eea;
         }
 
         .footer {
           text-align: center;
           color: white;
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid rgba(255,255,255,0.2);
+          margin-top: 50px;
+          padding-top: 30px;
+          border-top: 2px solid rgba(255,255,255,0.3);
         }
 
         .feature-status {
           display: flex;
           justify-content: center;
-          gap: 15px;
+          gap: 20px;
           flex-wrap: wrap;
-          margin-top: 15px;
+          margin-top: 20px;
         }
 
         .status-active {
-          background: rgba(255,255,255,0.2);
-          padding: 5px 10px;
-          border-radius: 15px;
+          background: rgba(76, 175, 80, 0.2);
+          color: #4caf50;
+          padding: 8px 16px;
+          border-radius: 20px;
           font-size: 14px;
+          font-weight: bold;
+          border: 1px solid #4caf50;
         }
 
         .status-coming {
-          background: rgba(255,255,255,0.1);
-          padding: 5px 10px;
-          border-radius: 15px;
+          background: rgba(158, 158, 158, 0.2);
+          color: #9e9e9e;
+          padding: 8px 16px;
+          border-radius: 20px;
           font-size: 14px;
-          opacity: 0.7;
+          border: 1px solid #9e9e9e;
         }
 
         @media (max-width: 768px) {
@@ -662,17 +764,34 @@ export default function Home() {
             padding: 10px;
           }
           
-          .button-group {
-            flex-direction: column;
-          }
-          
           .tabs {
             flex-direction: column;
           }
           
+          .tabs button {
+            width: 100%;
+            margin-bottom: 10px;
+          }
+          
           .feature-status {
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+          }
+          
+          .images-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .prompt-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .header h1 {
+            font-size: 2rem;
+          }
+          
+          .section h2 {
+            font-size: 1.5rem;
           }
         }
       `}</style>
