@@ -1,4 +1,4 @@
-// pages/api/brain.js - TAMİR EDİLMİŞ VERSİYON
+// pages/api/brain.js - KOORDİNATÖR VERSİYON
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -11,97 +11,37 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🧠 Beyin AI çalışıyor:', userPrompt);
+    console.log('🧠 Beyin AI Koordinatör çalışıyor:', userPrompt);
 
-    // 1. ÖNCE BASİT BİR PLAN OLUŞTUR (Google AI olmadan)
-    const simplePlan = {
-      teknoloji: "HTML5/JavaScript",
-      gorselTipi: "pixel art",
-      sesGereksinimleri: ["arkaplan_muzigi", "efekt_sesleri"],
-      oyunMotoru: "HTML5 Canvas",
-      zorlukSeviyesi: "başlangıç",
-      tahminiSure: "1-2 gün",
-      aciklama: `"${userPrompt}" için AI destekli oyun planı`,
-      not: "Google AI entegrasyonu yakında aktif edilecek"
+    // 1. ÖNCE DETAYLI PLAN OLUŞTUR
+    const gamePlan = await createGamePlan(userPrompt);
+    
+    // 2. TÜM GÖREVLERİ PARALEL ÇALIŞTIR
+    const tasks = await Promise.allSettled([
+      generateGameCode(userPrompt, gamePlan),
+      generateGameImages(userPrompt, gamePlan),
+      // generateGameMusic(userPrompt, gamePlan), // Sonra ekleyeceğiz
+      // generateGameSounds(userPrompt, gamePlan) // Sonra ekleyeceğiz
+    ]);
+
+    // 3. SONUÇLARI TOPLA
+    const results = {
+      plan: gamePlan,
+      code: tasks[0].status === 'fulfilled' ? tasks[0].value : { error: 'Kod üretilemedi' },
+      images: tasks[1].status === 'fulfilled' ? tasks[1].value : { error: 'Görsel üretilemedi' },
+      status: 'completed',
+      timestamp: new Date().toISOString()
     };
 
-    // 2. KOD ÜRETMEYİ DENE
-    let generatedCode = '';
-    try {
-      // generate-code API'sini çağır
-      const codeResponse = await fetch(`https://${process.env.VERCEL_URL || 'localhost:3000'}/api/generate-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: userPrompt
-        }),
-      });
-
-      if (codeResponse.ok) {
-        const codeData = await codeResponse.json();
-        generatedCode = codeData.code || 'Kod üretilemedi';
-        console.log('✅ Kod başarıyla üretildi');
-      } else {
-        throw new Error('Kod API hatası');
-      }
-    } catch (codeError) {
-      console.error('Kod üretim hatası:', codeError);
-      // Fallback: Akıllı kod üret
-      generatedCode = generateSmartFallbackCode(userPrompt);
-    }
-
-    // 3. BAŞARILI SONUÇ
-    res.status(200).json({
-      plan: simplePlan,
-      generatedCode: generatedCode,
-      status: 'completed',
-      source: 'brain_ai',
-      timestamp: new Date().toISOString()
-    });
+    console.log('✅ Tüm görevler tamamlandı');
+    res.status(200).json(results);
 
   } catch (error) {
-    console.error('🧠 Beyin AI hatası:', error);
+    console.error('❌ Beyin AI hatası:', error);
     
-    // SON ÇARE: Basit fallback
-    const fallbackCode = `// ${userPrompt} - Beyin AI Fallback
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-document.body.appendChild(canvas);
-canvas.width = 800;
-canvas.height = 600;
-
-let player = { x: 100, y: 100, size: 50 };
-let score = 0;
-
-function gameLoop() {
-  ctx.fillStyle = 'lightblue';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  ctx.fillStyle = 'blue';
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-  
-  ctx.fillStyle = 'black';
-  ctx.font = '20px Arial';
-  ctx.fillText('Skor: ' + score, 20, 30);
-  ctx.fillText('Oyun: ${userPrompt}', 20, 60);
-  ctx.fillText('Beyin AI Fallback Modu', 20, 90);
-  
-  requestAnimationFrame(gameLoop);
-}
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft') player.x -= 5;
-  if (e.key === 'ArrowRight') player.x += 5;
-  if (e.key === 'ArrowUp') player.y -= 5;
-  if (e.key === 'ArrowDown') player.y += 5;
-  if (e.key === ' ') score++;
-});
-
-gameLoop();
-console.log('🎮 ${userPrompt} - Beyin AI fallback çalışıyor!');`;
-
+    // FALLBACK: En azından kod üret
+    const fallbackCode = await generateGameCode(userPrompt, {});
+    
     res.status(200).json({
       plan: {
         teknoloji: "HTML5/JavaScript",
@@ -109,94 +49,176 @@ console.log('🎮 ${userPrompt} - Beyin AI fallback çalışıyor!');`;
         aciklama: "Beyin AI geçici olarak basit modda",
         error: error.message
       },
-      generatedCode: fallbackCode,
+      code: fallbackCode,
+      images: { error: 'Görsel üretimi geçici olarak devre dışı' },
       status: 'fallback',
-      source: 'brain_fallback',
       timestamp: new Date().toISOString()
     });
   }
 }
 
-// AKILLI FALLBACK KOD ÜRETİCİ
-function generateSmartFallbackCode(prompt) {
-  const lowerPrompt = prompt.toLowerCase();
+// OYUN PLANI OLUŞTURMA
+async function createGamePlan(userPrompt) {
+  // Şimdilik basit plan, sonra Google AI ile geliştireceğiz
+  const lowerPrompt = userPrompt.toLowerCase();
   
-  if (lowerPrompt.includes('uzay') || lowerPrompt.includes('gemi')) {
-    return `// 🚀 UZAY GEMİSİ OYUNU - ${prompt}
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-document.body.appendChild(canvas);
-canvas.width = 800;
-canvas.height = 600;
+  let plan = {
+    teknoloji: "HTML5/JavaScript",
+    gorselTipi: "pixel art",
+    sesGereksinimleri: ["arkaplan_muzigi", "efekt_sesleri"],
+    oyunMotoru: "HTML5 Canvas",
+    zorlukSeviyesi: "başlangıç",
+    tahminiSure: "1-2 gün",
+    aciklama: `"${userPrompt}" için AI destekli oyun planı`,
+    recommendedAssets: []
+  };
 
-let ship = { x: 400, y: 500, width: 40, height: 60, speed: 6 };
-let bullets = [];
-let asteroids = [];
-let score = 0;
-let lives = 3;
+  // Prompt'a göre özelleştir
+  if (lowerPrompt.includes('zombi') || lowerPrompt.includes('savaş')) {
+    plan.gorselTipi = "pixel art horror";
+    plan.recommendedAssets = ["zombi_karakteri", "kan_efekti", "karanlık_arkaplan"];
+  } else if (lowerPrompt.includes('uzay') || lowerPrompt.includes('gemi')) {
+    plan.gorselTipi = "vector art";
+    plan.recommendedAssets = ["uzay_gemisi", "asteroid", "yıldız_arkaplan"];
+  } else if (lowerPrompt.includes('araba') || lowerPrompt.includes('yarış')) {
+    plan.gorselTipi = "3D model";
+    plan.recommendedAssets = ["araba_modeli", "yol_arkaplan", "duman_efekti"];
+  }
 
-function createAsteroid() {
-  asteroids.push({
-    x: Math.random() * canvas.width,
-    y: -50,
-    width: 40 + Math.random() * 30,
-    height: 40 + Math.random() * 30,
-    speed: 2 + Math.random() * 3
-  });
+  return plan;
 }
 
-function gameLoop() {
-  // Arkaplan
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // Yıldızlar
-  ctx.fillStyle = 'white';
-  for(let i = 0; i < 50; i++) {
-    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+// KOD ÜRETİMİ
+async function generateGameCode(userPrompt, plan) {
+  try {
+    const response = await fetch(`https://${process.env.VERCEL_URL || 'localhost:3000'}/api/generate-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        prompt: `${userPrompt}. Teknoloji: ${plan.teknoloji}` 
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        code: data.code,
+        source: data.source || 'brain_coordinated'
+      };
+    }
+    throw new Error(`Kod API hatası: ${response.status}`);
+  } catch (error) {
+    console.error('Kod üretim hatası:', error);
+    return {
+      code: `// ${userPrompt} - Beyin AI Fallback Kodu\n// Plan: ${JSON.stringify(plan)}\nconsole.log("Koordinatör modu");`,
+      source: 'fallback_coordinated',
+      error: error.message
+    };
   }
-  
-  // Gemiyi çiz
-  ctx.fillStyle = '#3498db';
-  ctx.beginPath();
-  ctx.moveTo(ship.x, ship.y);
-  ctx.lineTo(ship.x - ship.width/2, ship.y + ship.height);
-  ctx.lineTo(ship.x + ship.width/2, ship.y + ship.height);
-  ctx.closePath();
-  ctx.fill();
-  
-  // Asteroidler
-  ctx.fillStyle = '#7f8c8d';
-  asteroids.forEach(asteroid => {
-    ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
-    asteroid.y += asteroid.speed;
-  });
-  
-  // UI
-  ctx.fillStyle = 'white';
-  ctx.font = '18px Arial';
-  ctx.fillText('Skor: ' + score, 20, 30);
-  ctx.fillText('Can: ' + lives, 20, 60);
-  ctx.fillText('Kontroller: ← → hareket, Space ateş', 20, 90);
-  
-  requestAnimationFrame(gameLoop);
 }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft') ship.x = Math.max(ship.width/2, ship.x - ship.speed);
-  if (e.key === 'ArrowRight') ship.x = Math.min(canvas.width - ship.width/2, ship.x + ship.speed);
-  if (e.key === ' ') {
-    bullets.push({ x: ship.x - 1, y: ship.y, speed: 10 });
-  }
-});
+// GÖRSEL ÜRETİMİ (ÇOKLU GÖRSEL)
+async function generateGameImages(userPrompt, plan) {
+  try {
+    const imagePrompts = createImagePrompts(userPrompt, plan);
+    const imageTasks = imagePrompts.map(prompt => 
+      generateSingleImage(prompt, plan.gorselTipi)
+    );
 
-setInterval(createAsteroid, 1000);
-gameLoop();
-console.log('🚀 Uzay gemisi oyunu başladı! Asteroidleri vur!');`;
+    const images = await Promise.allSettled(imageTasks);
+    
+    return {
+      images: images.map((result, index) => ({
+        prompt: imagePrompts[index],
+        result: result.status === 'fulfilled' ? result.value : { error: 'Görsel üretilemedi' }
+      })),
+      source: 'brain_coordinated_images'
+    };
+
+  } catch (error) {
+    console.error('Görsel koordinasyon hatası:', error);
+    return {
+      images: [],
+      error: error.message,
+      source: 'fallback_images'
+    };
   }
-  
-  // Diğer oyun türleri için fallback'ler...
-  return `// ${prompt} - Beyin AI Akıllı Fallback
-// Bu kod Beyin AI tarafından özel olarak üretildi!
-console.log("🎮 ${prompt} oyunu Beyin AI ile başlatılıyor...");`;
+}
+
+// TEKİL GÖRSEL ÜRETİMİ
+async function generateSingleImage(prompt, style) {
+  try {
+    const response = await fetch(`https://${process.env.VERCEL_URL || 'localhost:3000'}/api/generate-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        prompt: prompt,
+        style: style
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        imageUrl: data.imageUrl,
+        source: data.source || 'stable_diffusion'
+      };
+    }
+    throw new Error(`Görsel API hatası: ${response.status}`);
+  } catch (error) {
+    console.error('Tekil görsel hatası:', error);
+    return {
+      imageUrl: generateFallbackImage(prompt, style),
+      source: 'fallback_single_image',
+      error: error.message
+    };
+  }
+}
+
+// GÖRSEL PROMPT'LARI OLUŞTURMA
+function createImagePrompts(userPrompt, plan) {
+  const prompts = [];
+  const lowerPrompt = userPrompt.toLowerCase();
+
+  // Ana karakter
+  if (lowerPrompt.includes('zombi')) {
+    prompts.push('zombi karakteri, yeşil ten, kırmızı gözler, yırtık kıyafetler, pixel art');
+  } else if (lowerPrompt.includes('uzay') || lowerPrompt.includes('gemi')) {
+    prompts.push('uzay gemisi, futuristik, mavi ışıklar, vector art');
+  } else if (lowerPrompt.includes('araba')) {
+    prompts.push('yarış arabası, hızlı, spor, 3D model');
+  } else {
+    prompts.push(`ana karakter, ${userPrompt}, ${plan.gorselTipi}`);
+  }
+
+  // Arka plan
+  if (lowerPrompt.includes('zombi')) {
+    prompts.push('karanlık arka plan, terk edilmiş şehir, pixel art horror');
+  } else if (lowerPrompt.includes('uzay')) {
+    prompts.push('uzay arka plan, yıldızlar, nebulalar, vector art');
+  } else {
+    prompts.push(`oyun arka planı, ${plan.gorselTipi}`);
+  }
+
+  return prompts;
+}
+
+// FALLBACK GÖRSEL
+function generateFallbackImage(prompt, style) {
+  const svg = `
+    <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#667eea"/>
+      <text x="50%" y="45%" text-anchor="middle" font-family="Arial" font-size="18" fill="white">
+        ${prompt.substring(0, 40)}${prompt.length > 40 ? '...' : ''}
+      </text>
+      <text x="50%" y="55%" text-anchor="middle" font-family="Arial" font-size="14" fill="white">
+        ${style} • Beyin AI Koordinatör
+      </text>
+    </svg>
+  `;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
