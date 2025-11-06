@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameCraft AI - AI Powered Game Development</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Blockly CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/blockly/blockly.min.css">
+</head>
+<body>
+    <header>
+        <h1>🎮 GameCraft AI</h1>
+        <p>AI ile otomatik oyun geliştirme platformu</p>
+    </header>
 
+    <main>
+        <section class="chat-section">
+            <h2>🤖 Beyin AI - Oyun Fikrini Anlat</h2>
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <div class="message ai-message">
+                        Merhaba! Hangi oyunu yapmak istiyorsun? Bana anlat, ben senin için otomatik olarak oyunu oluşturayım!
+                    </div>
+                </div>
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="user-input" placeholder="Örnek: Uzay gemisi ile asteroidleri vurma oyunu..." required>
+                    <button type="submit">Gönder</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="preview-section">
+            <h2>🎮 Oyun Önizleme</h2>
+            <div id="game-preview" class="game-preview">
+                <p class="placeholder">Oyununuz burada görünecek...</p>
+            </div>
+            <a id="download-game" class="download-btn" style="display: none;">📥 Oyunu İndir</a>
+        </section>
+
+        <section class="blockly-section">
+            <h2>🧩 Görsel Programlama (Blockly)</h2>
+            <div id="blocklyDiv" style="height: 400px; width: 100%;"></div>
+            <div class="blockly-controls">
+                <button onclick="generateCode()">Kod Üret</button>
+                <button onclick="showCode()">Kodu Göster</button>
+            </div>
+            <pre id="generatedCode" style="display: none;"></pre>
+        </section>
+    </main>
+
+    <!-- Scriptler -->
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <script src="blockly-integration.js"></script>
+    <script src="js/openrouter-service.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
